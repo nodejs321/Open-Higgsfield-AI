@@ -2,7 +2,13 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { ImageStudio, VideoStudio, LipSyncStudio, CinemaStudio, MarketingStudio, WorkflowStudio, AgentStudio, AppsStudio, getUserBalance } from 'studio';
+
+const DesignAgentStudio = dynamic(() => import('studio').then(mod => mod.DesignAgentStudio), {
+  ssr: false,
+  loading: () => <div className="h-full w-full bg-black flex items-center justify-center text-white/20">Loading Design Studio...</div>
+});
 import axios from 'axios';
 import ApiKeyModal from './ApiKeyModal';
 
@@ -14,6 +20,7 @@ const TABS = [
   { id: 'marketing', label: 'Marketing Studio' },
   { id: 'workflows', label: 'Workflows' },
   { id: 'agents', label: 'Agents' },
+  { id: 'design-agent', label: 'Design Agent' },
   { id: 'apps', label: 'Explore Apps' },
 ];
 
@@ -45,6 +52,7 @@ export default function StandaloneShell() {
   const getInitialTab = () => {
     if (idFromParams || slug.includes('workflow')) return 'workflows';
     if (slug.includes('agents')) return 'agents';
+    if (slug.includes('design-agent')) return 'design-agent';
     if (slug.includes('apps')) return 'apps';
     const firstSegment = slug[0];
     if (firstSegment && TABS.find(t => t.id === firstSegment)) return firstSegment;
@@ -70,6 +78,8 @@ export default function StandaloneShell() {
         setActiveTab('workflows');
     } else if (slug.includes('agents')) {
         setActiveTab('agents');
+    } else if (slug.includes('design-agent')) {
+        setActiveTab('design-agent');
     } else if (slug.includes('apps')) {
         setActiveTab('apps');
     } else {
@@ -81,25 +91,30 @@ export default function StandaloneShell() {
   }, [slug, getWorkflowInfo]);
 
   const handleTabChange = (tabId) => {
-    setActiveTab(tabId);
     router.push(`/studio/${tabId}`);
+    // setActiveTab(tabId);
   };
 
-  // Auto-hide header when inside a specific workflow view
+  // Auto-hide header when inside a specific workflow view or design agent
   useEffect(() => {
     const isEditingWorkflow = (activeTab === 'workflows' || !!idFromParams) && urlWorkflowId;
-    if (isEditingWorkflow) {
+    const isDesignAgent = activeTab === 'design-agent';
+    
+    if (isEditingWorkflow || isDesignAgent) {
       setIsHeaderVisible(false);
     } else {
       setIsHeaderVisible(true);
     }
   }, [activeTab, urlWorkflowId, idFromParams]);
 
-  // Global builder CSS cleanup when switching away from Workflows tab
+  // Global builder CSS cleanup when switching away from Workflows or Design Agent tabs
   useEffect(() => {
     const fromBuilder = sessionStorage.getItem("fromWorkflowBuilder");
-    if (fromBuilder && activeTab !== 'workflows') {
+    const fromDesignAgent = sessionStorage.getItem("fromDesignAgent");
+    
+    if ((fromBuilder && activeTab !== 'workflows') || (fromDesignAgent && activeTab !== 'design-agent')) {
       sessionStorage.removeItem("fromWorkflowBuilder");
+      sessionStorage.removeItem("fromDesignAgent");
       window.location.reload();
     }
   }, [activeTab]);
@@ -310,6 +325,7 @@ export default function StandaloneShell() {
         {activeTab === 'marketing' && <MarketingStudio apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} />}
         {activeTab === 'workflows' && <WorkflowStudio apiKey={apiKey} isHeaderVisible={isHeaderVisible} onToggleHeader={setIsHeaderVisible} />}
         {activeTab === 'agents' && <AgentStudio apiKey={apiKey} isHeaderVisible={isHeaderVisible} onToggleHeader={setIsHeaderVisible} />}
+        {activeTab === 'design-agent' && <DesignAgentStudio apiKey={apiKey} isHeaderVisible={isHeaderVisible} onToggleHeader={setIsHeaderVisible} />}
         {activeTab === 'apps' && <AppsStudio apiKey={apiKey} />}
       </div>
 

@@ -7,7 +7,8 @@
   "workspaces": [
     "packages/studio",
     "packages/Vibe-Workflow/packages/workflow-builder",
-    "packages/Open-Poe-AI/packages/agents"
+    "packages/Open-Poe-AI/packages/agents",
+    "packages/Open-AI-Design-Agent/packages/design-agent"
   ],
   "scripts": {
     "dev": "next dev",

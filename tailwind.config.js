@@ -6,6 +6,7 @@ module.exports = {
         "./app/**/*.{js,ts,jsx,tsx}",
         "./components/**/*.{js,ts,jsx,tsx}",
         "./packages/studio/src/**/*.{js,jsx}",
+        "./packages/Open-AI-Design-Agent/packages/design-agent/src/**/*.{js,jsx}",
     ],
     theme: {
         extend: {
